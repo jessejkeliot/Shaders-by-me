@@ -14,7 +14,7 @@ const float brightness = 0.3;
 const float contrast = 10.0;
 const float gamma = 2.2;
 const float exposure = 0.3;
-const int iterations =20; 
+const int maxIterations =100; 
 
 vec3 gradientMap(float v){
   v = mod(v, 1.0);
@@ -59,8 +59,8 @@ vec3 colour(float de){
 float mandelbrot(vec2 coord){
     vec2 z = vec2(0);
     vec2 c = coord + viewOffset;
-    float ibe = 0.0; //iterations before explosion
-    for(int count=0;count<iterations; count++){
+    float ibe = 0.0; //maxIterations before explosion
+    for(int count=0;count<maxIterations; count++){
       z = cx_mul(z, z) + c; //    z = z^2 + c
       if(cx_modulus(z) > 10.0){
         ibe = float(count);
@@ -70,8 +70,32 @@ float mandelbrot(vec2 coord){
       return 1.0;
     }
     else{
-      return ibe/float(iterations);
+      return ibe/float(maxIterations);
     }
+}
+
+float julia(vec2 z, vec2 c, float R){
+  int iteration = 0;
+  vec2 uv = z;
+  float ibe = 0.0;
+  for(int iteration=maxIterations; iteration>0; iteration--){
+    
+      float xtemp = (uv.x * uv.x) - (uv.y * uv.y);
+      uv.y = xtemp + c.x;
+      if(uv.x * uv.x + uv.y + uv.y >= pow(R, 2.0)){
+        ibe= float(iteration);
+        break;
+      }
+  }
+
+
+  if(uv.x * uv.x + uv.y + uv.y < pow(R, 2.0)){
+    return 1.0;
+  }
+  else
+  {
+    return float(iteration);
+  }
 }
 
 void main() {
@@ -83,6 +107,7 @@ void main() {
   uv*= zoom;
   uv/=0.85;
   // uv*=(1.0 - log(time/10.0));
-  vec3 finalColor = log(mandelbrot(uv)* 5.0) * vec3(0.9, 0.21, 1.8);
+  // vec3 finalColor = log(mandelbrot(uv)* 5.0) * vec3(0.9, 0.21, 1.8);
+  vec3 finalColor = vec3(julia(uv, mousePos));
   gl_FragColor = vec4(finalColor, 1.0);
 }
