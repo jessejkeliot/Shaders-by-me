@@ -14,7 +14,7 @@ const float brightness = 0.3;
 const float contrast = 10.0;
 const float gamma = 2.2;
 const float exposure = 0.3;
-const int iterations =150; 
+const int iterations =20; 
 
 vec3 gradientMap(float v){
   v = mod(v, 1.0);
@@ -24,12 +24,6 @@ vec3 gradientMap(float v){
 vec3 paletteGet(float t,vec3 a,vec3 b,vec3 c,vec3 d )
 {
   return a + b*cos( 6.283185*(c*t+d) );
-}
-
-vec2 squareComplexNumber(vec2 c){
-  float a = (c.x * c.x) - (c.y * c.y);
-  float b = (c.x * c.y * 2.0); //*i
-  return vec2(a, b);
 }
 
 vec2 cx_mul(vec2 a, vec2 b){
@@ -63,14 +57,11 @@ vec3 colour(float de){
 }
 
 float mandelbrot(vec2 coord){
-    vec2 z = (mousePos - 0.5) * 2.0 * 4.0;
+    vec2 z = vec2(0);
     vec2 c = coord + viewOffset;
-    float u = sin(time/1000.0)*0.5 + 0.5;
-    vec2 v = vec2(c.y);
-    //z*z + c
-    float ibe = 0.0; //ibe = iterations before explosion
+    float ibe = 0.0; //iterations before explosion
     for(int count=0;count<iterations; count++){
-      z = cx_mul(z, z) + c; //    z^2 + c
+      z = cx_mul(z, z) + c; //    z = z^2 + c
       if(cx_modulus(z) > 10.0){
         ibe = float(count);
       }
@@ -91,11 +82,7 @@ void main() {
   uv.x -= sqrt(2.0) /2.0;
   uv*= zoom;
   uv/=0.85;
-  // uv*=(1 + time/10000.0);
-  
-  // vec3 finalColor =vec3(paletteGet(mandelbrot(uv), vec3(0.3, 0.2, 0.1), vec3(0.2, 0.4, 1.9), vec3(0.2, 0.0, 1.0), vec3(0.10, 0.4, 0.9))) * vec3(0.87, 0.3, 1.1);;
+  // uv*=(1.0 - log(time/10.0));
   vec3 finalColor = log(mandelbrot(uv)* 5.0) * vec3(0.9, 0.21, 1.8);
-  // vec3 finalColor = vec3(chikirovDistanceEstimator(uv));
-  // vec3 finalColor = vec3(inigopalette(log(mandelbrot(uv))));
   gl_FragColor = vec4(finalColor, 1.0);
 }
