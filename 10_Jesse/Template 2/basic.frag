@@ -21,8 +21,8 @@ void main() {
   tc.y = 1.0 - tc.y;
 
   // tc = vec2(mod(tc.x * 2.0, 1.0));
-  tc.x += step(mod(tc.x * 6.0, 1.0), 0.5) * (mod((tc.x*12.0), 1.0) * 0.1);
-  tc.y += step(mod(tc.x * 12.0, 1.0), 0.5) * (mod((uv.y*18.0), 2.9) * 0.05);
+  tc.x += step(mod(tc.x * 6.0, 1.0), 0.5) * (mod((tc.x*50.0), 1.0) * 0.1);
+  tc.y += mod((uv.x*50.0), 2.9) * 0.05;
 
   uv = uv * 2.0 - 1.0;
   uv.x *= aspect;
