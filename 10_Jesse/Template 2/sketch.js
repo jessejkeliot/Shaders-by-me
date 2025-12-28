@@ -4,8 +4,9 @@ var cnv;
 let paletteTexture;
 let imageTexture;
 let paletteLink = "aurora_palette.json";
-let imageLink = "test_image.png";
+let imageLink = "mr_sparkle.png";
 let jsonColors = [];
+
 function preload() {
     loadJSON(paletteLink, (data) => {
         jsonColors = data;
@@ -46,9 +47,11 @@ function setup() {
         paletteTexture.rect(i, 0, 1, 1);
     }
     imageTexture = loadImage(imageLink);
+    // imageTexture = video;
 }
 
 function draw() {
+
     shader(simpleShader);
     simpleShader.setUniform("time", millis() / 1000);
     simpleShader.setUniform("resolution", [width, height]);

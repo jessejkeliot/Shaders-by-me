@@ -18,11 +18,14 @@ void main() {
   vec2 uv = vTexCoord;
   vec2 tv = uv;
   vec2 tc = uv;
+  uv = 2.0*uv -1.0;
   tc.y = 1.0 - tc.y;
+  tc *= 0.9;
 
   // tc = vec2(mod(tc.x * 2.0, 1.0));
-  tc.x += step(mod(tc.y * 10.0, 1.0), 1.0/3.0) * mod((tc.x*10.0), 1.0) * 0.19;
-  // tc.y *= step(mod(tc.y * 12.0, 1.0), 0.5)
+  tc.x += step(mod(tc.x * 15.0 - length(uv.x), 1.0), 0.5) * mod((uv.x*20.0), 1.0) * 0.1;
+  // tc.y -= (1.0-(step(mod(tc.y * 2.0, 0.75), 0.5))) * mod((tc.y*20.0), 1.0) * 0.1;
+  tc.y += fract(tc.y* 15.0)*0.1 + length(tc) * 0.05;
 
   uv = uv * 2.0 - 1.0;
   uv.x *= aspect;
