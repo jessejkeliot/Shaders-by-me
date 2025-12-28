@@ -95,7 +95,7 @@ float julia(vec2 z, vec2 c, float R){
   else
   {
     return float(iteration);
-  }
+  };
 }
 
 void main() {
@@ -107,7 +107,7 @@ void main() {
   uv*= zoom;
   uv/=0.85;
   // uv*=(1.0 - log(time/10.0));
-  // vec3 finalColor = log(mandelbrot(uv)* 5.0) * vec3(0.9, 0.21, 1.8);
-  vec3 finalColor = vec3(julia(uv, mousePos));
+  vec3 finalColor = log(mandelbrot(uv)* 5.0) * vec3(0.9, 0.21, 1.8);
+  // vec3 finalColor = vec3(julia(uv, mousePos));waww
   gl_FragColor = vec4(finalColor, 1.0);
 }
