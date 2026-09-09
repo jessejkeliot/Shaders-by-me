@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Three.js WebGPU - p5.js Port</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+
+    <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.webgpu.js",
+            "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.webgpu.js",
+            "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.webgpu.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { 
+            texture, uv, time, vec2, vec3, vec4, 
+            fract, step, abs, length, uniform 
+        } from 'three/tsl';
+
+        async function init() {
+            // 3. WebGPU Renderer setup
+            const renderer = new THREE.WebGPURenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // WebGPU requires async initialization
+            await renderer.init();
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+            // 4. Setup Webcam (tex0 from your p5 sketch)
+            const video = document.createElement('video');
+            video.autoplay = true;
+            video.playsinline = true;
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.play();
+
+            const videoTexture = new THREE.VideoTexture(video);
+            const videoNode = texture(videoTexture);
+
+            // 5. Porting 'slidebothdir2' from basic.frag to TSL
+            const cuts = 10.0;
+            const uvNode = uv();
+            
+            // Normalized UV coordinates (-1 to 1)
+            const uvn = uvNode.sub(0.5).mul(2.0);
+
+            // Step/Fract logic for alternating direction
+            const altX = uvNode.x.mul(cuts).fract().step(0.5).sub(0.5);
+            const altY = uvNode.y.mul(cuts).fract().step(0.5).sub(0.5).mul(-1.0);
+
+            // Movement logic (time in TSL is in seconds)
+            // p5 sketch used time = millis/10000, so we divide Three.js time by 10
+            const t = time.div(10); 
+            
+            const xMoving = uvNode.x.add(t.mul(altY).mul(uvn.length())).fract().abs();
+            const yMoving = uvNode.y.add(t.mul(altX).mul(2.0).mul(uvn.length())).fract().abs();
+
+            // Create the Final Node Material
+            const material = new THREE.MeshBasicNodeMaterial();
+            
+            // Sample the webcam texture using calculated moving UVs
+            material.colorNode = texture(videoTexture, vec2(xMoving, yMoving));
+
+            const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+            scene.add(quad);
+
+            // Animation Loop
+            function animate() {
+                renderer.render(scene, camera);
+            }
+            renderer.setAnimationLoop(animate);
+
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        init().catch(err => {
+            console.error("Initialization failed:", err);
+            document.body.innerHTML = `<h2 style="color:white; padding:20px;">WebGPU Error: ${err.message}<br>Make sure you are using a WebGPU-enabled browser (Chrome/Edge/Arc).</h2>`;
+        });
+    </script>
+</body>
+</html>
